@@ -21,8 +21,8 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 /**
  * The vulkan renderer renders ... using vulkan. It does this using lwjgl3,
- * which currently only works on desktop. I plan on seeing if I can genericize
- * this to work on android as well.
+ * which currently only works on desktop (I think?). I plan on seeing if I can
+ * genericize this to work on android as well.
  *
  * @author Daniel Grace <dgrace@gracefulcode.com>
  */
