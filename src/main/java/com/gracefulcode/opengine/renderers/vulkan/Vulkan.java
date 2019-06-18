@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkExtensionProperties;
-import org.lwjgl.vulkan.VkInstance;
+// import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 /**
@@ -26,7 +26,7 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
  *
  * @author Daniel Grace <dgrace@gracefulcode.com>
  */
-public class Vulkan implements Renderer<PointerBuffer, String, ExtensionConfiguration, LayerConfiguration> {
+public class Vulkan implements Renderer {
 	protected ExtensionConfiguration extensionConfiguration;
 	protected LayerConfiguration layerConfiguration;
 	protected VkInstance vkInstance;
@@ -36,102 +36,38 @@ public class Vulkan implements Renderer<PointerBuffer, String, ExtensionConfigur
 	 * Initializes Vulkan in the default way. Currently the only thing
 	 * supported.
 	 */
-	public Vulkan(Platform<Vulkan> platform) {
-		this.extensionConfiguration = new ExtensionConfiguration();
-		this.layerConfiguration = new LayerConfiguration();
-
-		this.createInstance(platform);
+	public Vulkan(Platform<Vulkan> platform, String applicationName, int majorVersion, int minorVersion, int patchVersion) {
+		this.vkInstance = new VkInstance(applicationName, majorVersion, minorVersion, patchVersion, platform);
 		this.enumeratePhysicalDevices();
 	}
 
-	public ExtensionConfiguration getExtensionConfiguration() {
-		return this.extensionConfiguration;
-	}
-
-	public LayerConfiguration getLayerConfiguration() {
-		return this.layerConfiguration;
-	}
-
-	protected void createInstance(Platform<Vulkan> platform) {
-		/**
-		 * appInfo is basic information about the application itself. There
-		 * isn't anything super important here, though we do let Vulkan know
-		 * about both the engine and the particular game so that it can change
-		 * its behavior if there's a particular popular engine/game.
-		 */
-		VkApplicationInfo appInfo = VkApplicationInfo.calloc();
-		appInfo.sType(VK_STRUCTURE_TYPE_APPLICATION_INFO);
-		appInfo.pApplicationName(memUTF8(""));
-		appInfo.applicationVersion(VK_MAKE_VERSION(1, 0, 0));
-		appInfo.pEngineName(memUTF8("Opengine"));
-		appInfo.engineVersion(1);
-		appInfo.apiVersion(VK_MAKE_VERSION(1, 0, 2));
-
-		/**
-		 * Create info is pretty basic right now.
-		 */
-		VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.calloc();
-		createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
-		createInfo.pApplicationInfo(appInfo);
-		createInfo.pNext(NULL);
-
-		IntBuffer ib = memAllocInt(1);
-		vkEnumerateInstanceExtensionProperties((CharSequence)null, ib, null);
-		VkExtensionProperties.Buffer extensionProperties = VkExtensionProperties.calloc(ib.get(0));
-		vkEnumerateInstanceExtensionProperties((CharSequence)null, ib, extensionProperties);
-		for (int i = 0; i < extensionProperties.limit(); i++) {
-			extensionProperties.position(i);
-			this.extensionConfiguration.setExtension(
-				extensionProperties.extensionNameString(),
-				ExtensionConfiguration.RequireType.DONT_CARE
-			);
-		}
-		this.extensionConfiguration.lock();
-
-		platform.configureRendererExtensions(this);
-
-		PointerBuffer configuredExtensions = this.extensionConfiguration.getConfiguredExtensions();
-		createInfo.ppEnabledExtensionNames(configuredExtensions);
-
-		PointerBuffer configuredLayers = this.layerConfiguration.getConfiguredLayers();
-		createInfo.ppEnabledLayerNames(configuredLayers);
-
-		PointerBuffer pInstance = memAllocPointer(1);
-		int err = vkCreateInstance(createInfo, null, pInstance);
-		long vulkanInstanceId = pInstance.get(0);
-		memFree(pInstance);
-
-		if (err != VK_SUCCESS) {
-			throw new AssertionError("Failed to create VkInstance: " + Vulkan.translateVulkanResult(err));
-		}
-
-		this.vkInstance = new VkInstance(vulkanInstanceId, createInfo);
-		memFree(ib);
-	}
-
 	protected void enumeratePhysicalDevices() {
-		IntBuffer ib = memAllocInt(1);
-		int err = vkEnumeratePhysicalDevices(this.vkInstance, ib, null);
-		if (err != VK_SUCCESS) {
-			throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
-		}
+		// IntBuffer ib = memAllocInt(1);
+		// int err = vkEnumeratePhysicalDevices(this.vkInstance, ib, null);
+		// if (err != VK_SUCCESS) {
+		// 	throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
+		// }
 
-		int numPhysicalDevices = ib.get(0);
+		// int numPhysicalDevices = ib.get(0);
 
-		PointerBuffer pPhysicalDevices = memAllocPointer(numPhysicalDevices);
-		err = vkEnumeratePhysicalDevices(this.vkInstance, ib, pPhysicalDevices);
-		memFree(ib);
-		if (err != VK_SUCCESS) {
-			throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
-		}
+		// PointerBuffer pPhysicalDevices = memAllocPointer(numPhysicalDevices);
+		// err = vkEnumeratePhysicalDevices(this.vkInstance, ib, pPhysicalDevices);
+		// memFree(ib);
+		// if (err != VK_SUCCESS) {
+		// 	throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
+		// }
 
-		for (int i = 0; i < numPhysicalDevices; i++) {
-			long physicalDeviceId = pPhysicalDevices.get(i);
-			PhysicalDevice physicalDevice = new PhysicalDevice(physicalDeviceId);
+		// for (int i = 0; i < numPhysicalDevices; i++) {
+		// 	long physicalDeviceId = pPhysicalDevices.get(i);
+		// 	PhysicalDevice physicalDevice = new PhysicalDevice(physicalDeviceId);
 
-			this.physicalDevices.add(physicalDevice);
-		}
-		memFree(pPhysicalDevices);
+		// 	this.physicalDevices.add(physicalDevice);
+		// }
+		// memFree(pPhysicalDevices);
+	}
+
+	public void dispose() {
+		this.vkInstance.dispose();
 	}
 
 	/**
