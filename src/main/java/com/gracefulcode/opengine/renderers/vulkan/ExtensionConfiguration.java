@@ -2,12 +2,14 @@ package com.gracefulcode.opengine.renderers.vulkan;
 
 import static org.lwjgl.system.MemoryUtil.*;
 
+import com.gracefulcode.opengine.core.Ternary;
+
 import org.lwjgl.PointerBuffer;
 
 import java.util.HashMap;
 
 public class ExtensionConfiguration implements com.gracefulcode.opengine.core.ExtensionConfiguration<PointerBuffer, String> {
-	protected HashMap<String, RequireType> extensions = new HashMap<String, RequireType>();
+	protected HashMap<String, Ternary> extensions = new HashMap<String, Ternary>();
 	protected boolean isLocked = false;
 
 	public void lock() {
@@ -33,10 +35,10 @@ public class ExtensionConfiguration implements com.gracefulcode.opengine.core.Ex
 		return ret;
 	}
 
-	public void setExtension(String extensionName, RequireType requireType) {
+	public void setExtension(String extensionName, Ternary requireType) {
 		if (!this.extensions.containsKey(extensionName)) {
 			if (this.isLocked) {
-				if (requireType == RequireType.REQUIRED) {
+				if (requireType == Ternary.YES) {
 					throw new AssertionError("Extension " + extensionName + " is being marked as required, but it is not supported.");
 				}
 			} else {
@@ -45,36 +47,34 @@ public class ExtensionConfiguration implements com.gracefulcode.opengine.core.Ex
 			return;
 		}
 
-		RequireType previousValue = this.extensions.get(extensionName);
+		Ternary previousValue = this.extensions.get(extensionName);
 		switch (previousValue) {
-			case DONT_CARE:
-			case DESIRED:
+			case UNKNOWN:
 				this.extensions.put(extensionName, requireType);
 				break;
-			case NOT_DESIRED:
-				if (requireType == RequireType.REQUIRED) {
+			case NO:
+				if (requireType == Ternary.YES) {
 					throw new AssertionError(extensionName + " is both required and not desired. Cannot resolve.");
 				}
 				break;
-			case REQUIRED:
-				if (requireType == RequireType.NOT_DESIRED) {
+			case YES:
+				if (requireType == Ternary.NO) {
 					throw new AssertionError(extensionName + " is both reqiuerd and not desired. Cannot resolve.");
 				}
 				break;
 		}
 	}
 
-	public RequireType getRequireType(String extensionName) {
+	public Ternary getRequireType(String extensionName) {
 		if (this.extensions.containsKey(extensionName))
 			return this.extensions.get(extensionName);
-		return RequireType.DONT_CARE;
+		return Ternary.NO;
 	}
 
 	public boolean shouldHave(String extensionName) {
 		if (this.extensions.containsKey(extensionName)) {
 			switch (this.extensions.get(extensionName)) {
-				case REQUIRED:
-				case DESIRED:
+				case YES:
 					return true;
 			}
 		}

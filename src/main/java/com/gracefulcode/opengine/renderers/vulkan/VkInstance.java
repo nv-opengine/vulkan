@@ -4,20 +4,75 @@ import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 import com.gracefulcode.opengine.core.Platform;
+import com.gracefulcode.opengine.core.Ternary;
 
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkExtensionProperties;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
+/**
+ * VkInstance is a wrapper around the VkInstance from lwjgl.
+ * <p>
+ * It should not expose anything lwjgl-specific, however as we are trying to be
+ * pretty agnostic and be able to change platforms out in the future.
+ *
+ * @author Daniel Grace <dgrace@gracefulcode.com>
+ * @version 0.1
+ * @since 0.1
+ */
 public class VkInstance {
+	/**
+	 * Vulkan long identifying this instance.
+	 */
 	protected long id;
+
+	/**
+	 * We use this to collect supported and needed extensions.
+	 * <p>
+	 * After initialization it holds the extensions that have active.
+	 */
 	protected ExtensionConfiguration extensionConfiguration;
+
+	/**
+	 * Currently unused as layers seem to only exist for debugging and
+	 * debugging isn't yet done.
+	 */
 	protected LayerConfiguration layerConfiguration;
+
+	/**
+	 * Many of the lwjgl functions require their own VkInstance passed in. We
+	 * thus need to create and store this for that.
+	 */
 	protected org.lwjgl.vulkan.VkInstance vkInstance;
 
+	/**
+	 * The physical devices that this instance has access to.
+	 * <p>
+	 * We will be choosing from among these when we create all of our queues
+	 * and whatnot later. Once we get to there we may be keeping these in a
+	 * dictionary of Devices to what has been initialized.
+	 */
+	protected ArrayList<PhysicalDevice> physicalDevices = new ArrayList<PhysicalDevice>();
+
+	/**
+	 * Initialize a VkInstance. There should be one per application.
+	 *
+	 * @param applicationName The name of your application. Not really used
+	 *        anywhere, but you should fill it out.
+	 * @param majorVersion The major version of your application. Not really
+	 *        used anywhere, but you should fill it out.
+	 * @param minorVersion The minor version of your application. Not really
+	 *        used anywhere, but you should fill it out.
+	 * @param patchVersion The patch version of your application. Not really
+	 *        used anywhere, but you should fill it out.
+	 * @param platform The platform that this VkInstance is being created for.
+	 *        The platform will be able to alter VkIinstance creation to fit
+	 *        its requirements.
+	 */
 	public VkInstance(String applicationName, int majorVersion, int minorVersion, int patchVersion, Platform<Vulkan> platform) {
 		this.extensionConfiguration = new ExtensionConfiguration();
 		this.layerConfiguration = new LayerConfiguration();
@@ -55,7 +110,7 @@ public class VkInstance {
 			extensionProperties.position(i);
 			this.extensionConfiguration.setExtension(
 				extensionProperties.extensionNameString(),
-				ExtensionConfiguration.RequireType.DONT_CARE
+				Ternary.UNKNOWN
 			);
 		}
 		this.extensionConfiguration.lock();
@@ -78,7 +133,29 @@ public class VkInstance {
 		}
 
 		this.vkInstance = new org.lwjgl.vulkan.VkInstance(this.id, createInfo);
+
+		err = vkEnumeratePhysicalDevices(this.vkInstance, ib, null);
+		if (err != VK_SUCCESS) {
+			throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
+		}
+
+		int numPhysicalDevices = ib.get(0);
+		System.out.println("Num physical devices: " + numPhysicalDevices);
+
+		PointerBuffer pPhysicalDevices = memAllocPointer(numPhysicalDevices);
+		err = vkEnumeratePhysicalDevices(this.vkInstance, ib, pPhysicalDevices);
 		memFree(ib);
+		if (err != VK_SUCCESS) {
+			throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
+		}
+
+		for (int i = 0; i < numPhysicalDevices; i++) {
+			long physicalDeviceId = pPhysicalDevices.get(i);
+			PhysicalDevice physicalDevice = new PhysicalDevice(this.vkInstance, physicalDeviceId);
+
+			this.physicalDevices.add(physicalDevice);
+		}
+		memFree(pPhysicalDevices);
 	}
 
 	public void dispose() {

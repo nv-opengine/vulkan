@@ -27,10 +27,7 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
  * @author Daniel Grace <dgrace@gracefulcode.com>
  */
 public class Vulkan implements Renderer {
-	protected ExtensionConfiguration extensionConfiguration;
-	protected LayerConfiguration layerConfiguration;
 	protected VkInstance vkInstance;
-	protected ArrayList<PhysicalDevice> physicalDevices = new ArrayList<PhysicalDevice>();
 
 	/**
 	 * Initializes Vulkan in the default way. Currently the only thing
@@ -42,28 +39,6 @@ public class Vulkan implements Renderer {
 	}
 
 	protected void enumeratePhysicalDevices() {
-		// IntBuffer ib = memAllocInt(1);
-		// int err = vkEnumeratePhysicalDevices(this.vkInstance, ib, null);
-		// if (err != VK_SUCCESS) {
-		// 	throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
-		// }
-
-		// int numPhysicalDevices = ib.get(0);
-
-		// PointerBuffer pPhysicalDevices = memAllocPointer(numPhysicalDevices);
-		// err = vkEnumeratePhysicalDevices(this.vkInstance, ib, pPhysicalDevices);
-		// memFree(ib);
-		// if (err != VK_SUCCESS) {
-		// 	throw new AssertionError("Could not enumerate physical devices: " + Vulkan.translateVulkanResult(err));
-		// }
-
-		// for (int i = 0; i < numPhysicalDevices; i++) {
-		// 	long physicalDeviceId = pPhysicalDevices.get(i);
-		// 	PhysicalDevice physicalDevice = new PhysicalDevice(physicalDeviceId);
-
-		// 	this.physicalDevices.add(physicalDevice);
-		// }
-		// memFree(pPhysicalDevices);
 	}
 
 	public void dispose() {

@@ -2,12 +2,14 @@ package com.gracefulcode.opengine.renderers.vulkan;
 
 import static org.lwjgl.system.MemoryUtil.*;
 
+import com.gracefulcode.opengine.core.Ternary;
+
 import org.lwjgl.PointerBuffer;
 
 import java.util.HashMap;
 
 public class LayerConfiguration implements com.gracefulcode.opengine.core.LayerConfiguration<PointerBuffer, String> {
-	protected HashMap<String, RequireType> layers = new HashMap<String, RequireType>();
+	protected HashMap<String, Ternary> layers = new HashMap<String, Ternary>();
 	protected boolean isLocked = false;
 
 	public void lock() {
@@ -33,10 +35,10 @@ public class LayerConfiguration implements com.gracefulcode.opengine.core.LayerC
 		return ret;
 	}
 
-	public void setLayer(String layerName, RequireType requireType) {
+	public void setLayer(String layerName, Ternary requireType) {
 		if (!this.layers.containsKey(layerName)) {
 			if (this.isLocked) {
-				if (requireType == RequireType.REQUIRED) {
+				if (requireType == Ternary.YES) {
 					throw new AssertionError("Layer " + layerName + " is being marked as required, but it is not supported.");
 				}
 			} else {
@@ -45,36 +47,34 @@ public class LayerConfiguration implements com.gracefulcode.opengine.core.LayerC
 			return;
 		}
 
-		RequireType previousValue = this.layers.get(layerName);
+		Ternary previousValue = this.layers.get(layerName);
 		switch (previousValue) {
-			case DONT_CARE:
-			case DESIRED:
+			case UNKNOWN:
 				this.layers.put(layerName, requireType);
 				break;
-			case NOT_DESIRED:
-				if (requireType == RequireType.REQUIRED) {
+			case NO:
+				if (requireType == Ternary.YES) {
 					throw new AssertionError(layerName + " is both required and not desired. Cannot resolve.");
 				}
 				break;
-			case REQUIRED:
-				if (requireType == RequireType.NOT_DESIRED) {
+			case YES:
+				if (requireType == Ternary.NO) {
 					throw new AssertionError(layerName + " is both reqiuerd and not desired. Cannot resolve.");
 				}
 				break;
 		}
 	}
 
-	public RequireType getRequireType(String layerName) {
+	public Ternary getRequireType(String layerName) {
 		if (this.layers.containsKey(layerName))
 			return this.layers.get(layerName);
-		return RequireType.DONT_CARE;
+		return Ternary.UNKNOWN;
 	}
 
 	public boolean shouldHave(String layerName) {
 		if (this.layers.containsKey(layerName)) {
 			switch (this.layers.get(layerName)) {
-				case REQUIRED:
-				case DESIRED:
+				case YES:
 					return true;
 			}
 		}
