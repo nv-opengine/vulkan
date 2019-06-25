@@ -47,7 +47,7 @@ public class VkInstance {
 	 * Many of the lwjgl functions require their own VkInstance passed in. We
 	 * thus need to create and store this for that.
 	 */
-	protected org.lwjgl.vulkan.VkInstance vkInstance;
+	org.lwjgl.vulkan.VkInstance vkInstance;
 
 	/**
 	 * The physical devices that this instance has access to.

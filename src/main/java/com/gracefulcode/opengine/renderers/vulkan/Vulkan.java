@@ -1,6 +1,5 @@
 package com.gracefulcode.opengine.renderers.vulkan;
 
-import com.gracefulcode.opengine.core.Platform;
 import com.gracefulcode.opengine.core.Renderer;
 
 import static org.lwjgl.system.MemoryUtil.*;
@@ -33,8 +32,9 @@ public class Vulkan implements Renderer {
 	 * Initializes Vulkan in the default way. Currently the only thing
 	 * supported.
 	 */
-	public Vulkan(Platform<Vulkan> platform, String applicationName, int majorVersion, int minorVersion, int patchVersion) {
+	public Vulkan(VulkanPlatform platform, String applicationName, int majorVersion, int minorVersion, int patchVersion) {
 		this.vkInstance = new VkInstance(applicationName, majorVersion, minorVersion, patchVersion, platform);
+		platform.setInstance(this.vkInstance.vkInstance);
 		this.enumeratePhysicalDevices();
 	}
 

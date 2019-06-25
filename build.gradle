@@ -30,7 +30,9 @@ dependencies {
     implementation "org.lwjgl:lwjgl-glfw:$lwjglVersion"
     implementation "org.lwjgl:lwjgl-openal:$lwjglVersion"
     implementation "org.lwjgl:lwjgl-stb:$lwjglVersion"
-    implementation "org.lwjgl:lwjgl-vulkan:$lwjglVersion"
+
+    // We need api so that desktop can grab stuff.
+    api "org.lwjgl:lwjgl-vulkan:$lwjglVersion"
     runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp:$lwjglVersion:$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives"
