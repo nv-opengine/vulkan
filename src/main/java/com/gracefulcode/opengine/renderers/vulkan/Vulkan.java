@@ -34,7 +34,7 @@ public class Vulkan implements Renderer {
 	 */
 	public Vulkan(VulkanPlatform platform, String applicationName, int majorVersion, int minorVersion, int patchVersion) {
 		this.vkInstance = new VkInstance(applicationName, majorVersion, minorVersion, patchVersion, platform);
-		platform.setInstance(this.vkInstance.vkInstance);
+		platform.setInstance(this.vkInstance);
 		this.enumeratePhysicalDevices();
 	}
 

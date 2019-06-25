@@ -38,7 +38,7 @@ public class PhysicalDevice {
 	public int apiVersion;
 	public int deviceId;
 	public String deviceName;
-	public int deviceType;
+	protected int deviceType;
 	public int driverVersion;
 	public int vendorId;
 
@@ -229,6 +229,18 @@ public class PhysicalDevice {
 		this.setupProperties();
 		this.setupFeatures();
 		this.setupQueues();
+	}
+
+	public String toString() {
+		return this.deviceName;
+	}
+
+	public VkPhysicalDevice getPhysicalDevice() {
+		return this.vkPhysicalDevice;
+	}
+
+	public boolean isDiscreteGpu() {
+		return this.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 	}
 
 	protected void setupProperties() {

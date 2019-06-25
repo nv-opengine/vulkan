@@ -8,6 +8,7 @@ import com.gracefulcode.opengine.core.Ternary;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.vulkan.VkApplicationInfo;
@@ -156,6 +157,21 @@ public class VkInstance {
 			this.physicalDevices.add(physicalDevice);
 		}
 		memFree(pPhysicalDevices);
+	}
+
+	public org.lwjgl.vulkan.VkInstance getInstance() {
+		return this.vkInstance;
+	}
+
+	public PhysicalDevice getFirst(Comparator<PhysicalDevice> comparator) {
+		PhysicalDevice ret = this.physicalDevices.get(0);
+		for (int i = 0; i < this.physicalDevices.size(); i++) {
+			PhysicalDevice contendor = this.physicalDevices.get(i);
+			if (comparator.compare(ret, contendor) < 0) {
+				ret = contendor;
+			}
+		}
+		return ret;
 	}
 
 	public void dispose() {

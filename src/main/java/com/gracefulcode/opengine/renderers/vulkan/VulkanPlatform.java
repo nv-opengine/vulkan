@@ -3,5 +3,5 @@ package com.gracefulcode.opengine.renderers.vulkan;
 import com.gracefulcode.opengine.core.Platform;
 
 public interface VulkanPlatform extends Platform<Vulkan> {
-	public void setInstance(org.lwjgl.vulkan.VkInstance instance);
+	public void setInstance(VkInstance instance);
 }
